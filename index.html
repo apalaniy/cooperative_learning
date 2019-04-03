@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <div id="instruction"></div>
+        <div id="player"></div>
+        <div id="rectangle" style="width:680px; height:360px; background-color:white"></div>
+        
+        <script>
+            
+            //position of the player
+            var d = document.getElementById('player');
+            d.style.position = "absolute";
+            d.style.left = 30 + '%';
+            d.style.top = 25 +'%';
+            
+            //position of the pop up window
+            var d = document.getElementById('rectangle');
+            d.style.position = "absolute";
+            d.style.left = 29 + '%';
+            d.style.top = 25 +'%';
+            
+            //position of instructions
+            var d = document.getElementById('instruction');
+            d.style.position = "absolute";
+            d.style.left = 30 + '%';
+            d.style.top = 15 +'%';
+            d.innerHTML = "You can pause the video at any point, but please" + "<font class='emphasis'> do not fast-forward the video. </font>";
+        
+            element = document.getElementById("rectangle");
+            element.style.display = 'none';
+
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                                   height: '360',
+                                   width: '640',
+                                   videoId: 'aLGjTxhdRmI',
+                                   playerVars: {'autoplay': 0, 'wmode': 'transparent', 'fs': 0, 'controls':1, 'rel':0, 'modestbranding':1, 'showinfo':0},
+                                   events: {
+                                   'onReady': onPlayerReady,
+                                   'onStateChange': onPlayerStateChange
+                                   }
+                                   });
+            document.getElementById('player').style['z-index']=-10;
+            document.getElementById('player').style['-webkit-transform']='translateZ(0)';
+        }
+        
+        function onPlayerReady(event) {
+            event.target.playVideo();
+        }
+        
+        function onPlayerStateChange(event) {
+            var time, rate, remainingTime;
+            clearTimeout(stopPlayTimer);
+            if (event.data == YT.PlayerState.PLAYING) {
+                time = player.getCurrentTime();
+                if (time + .4 < stopPlayAt) {
+                    rate = player.getPlaybackRate();
+                    remainingTime = (stopPlayAt - time) / rate;
+                    if(regime == 'quest') {
+                        stopPlayTimer = setTimeout(createQuestion, remainingTime * 1000);
+                    }
+                    if(regime == 'explanation') {
+                        stopPlayTimer = setTimeout(stopSchooling, remainingTime * 1000);
+                    }
+                    if(regime == 'common') {
+                        stopPlayTimer = setTimeout(createCommon, remainingTime * 1000);
+                    }
+                }
+            }
+        }
+        
+        
+        var cq = 0;
+        var type = -1;
+        var j = 0;
+        var common_questions = ["Please, select a role assigned to you by a teacher", "You have completed the first part of the exercise. If you feel that you don't fully understand the concept, watch the video again. Otherwise, proceed to your partner to teach him about what you have learned", "Once you teach your partner the material you learned and learn from your partner, press" +  "<b> submit </b>" + "and you will be redirected to the quiz section. Remember that your grade will be an average of your and your partner grades!"];
+        var common_options = [[" Student 1", " Student 2"], [" I want to watch the video again", " I'm ready to teach my partner"]];
+        var common_times = [54, [254.5, 790], 794];
+        var common_times_to_go = [[[57, 256], [57, 256]], [[57, 793], [256, 793]]];
+        var num_common_options = [2, 2, 0];
+        var regime = 'common';
+        var stopPlayTimer;
+        var stopPlayAt = common_times[0];
+        
+        var num_quest = 6;
+        var times_to_stop = [87, 313.5, 481, 637, 879, 962];
+        var times_to_go = [[97, 119, 151.5, 140.5], [329, 359.5, 386.5, 413, 432], [491, 527.5, 550, 570], [650, 702, 680], [880, 883], [968.5, 965]];
+        var num_options = [4, 5, 4, 3, 2, 2];
+        var end_explanation = [[118, 140, 160, 151], [351, 380, 405, 431, 434], [523, 544.5, 569.5, 573], [679, 704 ,701], [882.5, 885], [970.5, 968]];
+        var correct_exp = [160, 434.5, 573, 708, 886, 971];
+        var is_image = [true, true, true, true, false, false];
+        var srcs     = ['https://s3.amazonaws.com/05840/fig1.png', 'https://s3.amazonaws.com/05840/fig2.png',
+                        'https://s3.amazonaws.com/05840/fig3.png', 'https://s3.amazonaws.com/05840/fig4.png',
+                        'none', 'none'];
+                        var texts = ["What fundamental physics effect/law can help astronauts find each other and how?",
+                                     "Given that Alice and Bob are d distance away from the station, at which point(s) are they located?",
+                                     "Given that Alice and Bob are d1 distance away from the first station and d2 distance away from the second station, at which point(s) are they located?",
+                                     "Given that Alice and Bob are d1 distance away from the first station, d2 distance away from the second station and d3 distance away from the third station, at which point(s) are they located?",
+                                     "How many satellites should the device hear to determine user\'s location in 3D world?",
+                                     "Given the information about GPS you learned today, do you think that Bob will be able to find his iPhone lost in mountains. Notice that there is no internet connection in mountains."];
+                                     var options = [[" 1. Newton\'s Second Law", " 2. The first law of thermodynamics", " 3. Constant speed of radio waves in vacuum", " 4. Nothing can help"],
+                                                    [" 1. A", " 2. B", " 3. C", " 4. E", " 5. There is not enough information to tell"],
+                                                    [" 1. A or C, but not in any other", " 2. exactly B", " 3. exactly C", " 4. A or B, but not any other"],
+                                                    [" 1. A or G, but not in any other", " 2. exactly B", " 3. exactly A"],
+                                                    [" 1. three, as in 2D Asteroid X", " 2. four, you need to add one more"],
+                                                    [" 1. no way", " 2. yeah, sure"]];
+        //source https://stackoverflow.com/questions/14152415/use-youtubeapi-to-play-youtube-video-until-a-particular-time-and-pause
+
+        
+        function createCommon() {
+            player.pauseVideo();
+            var html = "";
+            html += "<table>"
+            html += "<tr> <td>" + common_questions[cq] + "<br><br>";
+            for (var k = 0; k < num_common_options[cq]; k++) {
+                html += "<label> <input type='radio' name='question" + "" + cq.toString() + "' value='option" + k.toString() + "' id='" + cq.toString() + k.toString() + "' />" + common_options[cq][k] +  "</label><br>";
+            }
+            html += "<br><br><span id='submit_ans'><button type='button' onClick='javascript:evaluateCommon()'> Submit </button></span> </td></tr> </table>";
+            element.innerHTML += html;
+            element.style.display = 'block';
+        }
+        
+        function evaluateCommon() {
+            if(cq == 2) {
+                element.style.display = 'none';
+                element.innerHTML = '';
+                regime = 'quest';
+                j = 4;
+                stopPlayAt = times_to_stop[j];
+                player.playVideo();
+                return ;
+            }
+            var counter = 0;
+            var next_time;
+            var answer;
+            for(var k=0; k<num_common_options[cq]; k++) {
+                if(document.getElementById(cq.toString() + k.toString()).checked == true) {
+                    if(type == -1) {
+                        type = k;
+                    }
+                    counter += 1;
+                    next_time = common_times_to_go[cq][type][k];
+                    answer = k;
+                }
+            }
+            if(counter == 0) {
+                alert("You must select an answer!");
+            } else {
+                if(cq == 0) {
+                    cq = cq + 1;
+                    element.style.display = 'none';
+                    element.innerHTML = '';
+                    regime = 'quest';
+                    if(answer == 0) {
+                        j = 0;
+                    } else {
+                        j = 1;
+                    }
+                    stopPlayAt = times_to_stop[j];
+                    player.seekTo(next_time);
+                    player.playVideo();
+                } else {
+                    if(answer == 0) {
+                        element.style.display = 'none';
+                        element.innerHTML = '';
+                        regime = 'quest';
+                        if(type == 0) {
+                            j = 0;
+                        } else {
+                            j = 1;
+                        }
+                        stopPlayAt = times_to_stop[j];
+                        player.seekTo(next_time);
+                        player.playVideo();
+                    } else {
+                        cq = 2;
+                        element.style.display = 'none';
+                        element.innerHTML = '';
+                        stopPlayAt = common_times[cq];
+                        player.seekTo(next_time);
+                        player.playVideo();
+                    }
+                }
+            }
+        }
+        
+        
+                     
+        function stopSchooling() {
+            next_time = correct_exp[j];
+            if(type == 0 & j == 0) {
+                stopPlayAt = common_times[1][0];
+                regime = 'common';
+                player.seekTo(next_time);
+                player.playVideo();
+            } else if(j == 3) {
+                stopPlayAt = common_times[1][1];
+                regime = 'common';
+                player.seekTo(next_time);
+                player.playVideo();
+            } else {
+                j = j + 1;
+                if (j < num_quest) {
+                    stopPlayAt = times_to_stop[j];
+                }
+                regime = 'quest';
+                player.seekTo(next_time);
+                player.playVideo();
+            }
+        }
+    
+        function createQuestion() {
+            console.log(type);
+            player.pauseVideo();
+            var html = "";
+            html += "<table>"
+            if (is_image[j] == true) {
+                html += "<tr> <td> <img style='border: #000000 1px outset;' src='" + srcs[j] + "' width=680/> </td></tr>";
+            }
+            html += "<tr> <td>" + texts[j] + "<br><br>";
+            for (var k = 0; k < num_options[j]; k++) {
+                html += "<label> <input type='radio' name='question" + "" + j.toString() + "' value='option" + k.toString() + "' id='" + j.toString() + k.toString() + "' />" + options[j][k] +  "</label><br>";
+            }
+            html += "<br><br><span id='submit_ans'><button type='button' onClick='javascript:evaluateAnswer()'> Submit </button></span> </td></tr> </table>";
+            element.innerHTML += html;
+            element.style.display = 'block';
+        }
+        
+        function evaluateAnswer() {
+            var counter = 0;
+            var next_time;
+            var answer;
+            for(var k=0; k<num_options[j]; k++) {
+                if(document.getElementById(j.toString() + k.toString()).checked == true) {
+                    counter += 1;
+                    next_time = times_to_go[j][k];
+                    answer = k;
+                }
+            }
+            if(counter == 0) {
+                alert("You must select an answer!");
+            } else {
+                element.style.display = 'none';
+                element.innerHTML = '';
+                regime = 'explanation';
+                stopPlayAt = end_explanation[j][answer];
+                player.seekTo(next_time);
+                player.playVideo();
+            }
+        }
+        </script>
+    </body>
+    <style>
+        font.emphasis {
+            font-weight:bold;
+            color:red;
+        }
+    font.bolded {
+        font-weight:bold;
+    }
+    </style>
+</html>
